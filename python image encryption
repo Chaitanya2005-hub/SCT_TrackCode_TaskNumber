@@ -1,0 +1,41 @@
+from PIL import Image              
+import numpy as np                 
+import os                         
+def load_image(path):
+    return Image.open(r"E:\task 2\encrypted image.jpg")
+def save_image(img_array, path):
+    img = Image.fromarray(img_array.astype('uint8'))
+    img.save(path)
+def encrypt_image(image, key=50, do_swap=True):
+    data = np.array(image, dtype=np.uint16)
+    encrypted = (data + key) % 256
+    if do_swap:
+        encrypted = encrypted.copy()          
+        h, w, _ = encrypted.shape             
+
+        for i in range(0, h-1, 2):
+            for j in range(0, w-1, 2):
+                encrypted[i, j], encrypted[i+1, j+1] = encrypted[i+1, j+1], encrypted[i, j].copy()
+
+    return encrypted
+def decrypt_image(encrypted_image, key=50, do_swap=True):
+    data = np.array(encrypted_image, dtype=np.uint16)
+    if do_swap:
+        data = data.copy()                   
+        h, w, _ = data.shape                 
+        for i in range(0, h-1, 2):
+            for j in range(0, w-1, 2):
+                data[i, j], data[i+1, j+1] = data[i+1, j+1], data[i, j].copy()
+    decrypted = (data - key) % 256
+    return decrypted
+if _name_ == "_main_":
+    input_path = "input_image.png"
+    enc_path = "output/encrypted.jpg"
+    dec_path = "output/decrypted.jpg"
+    key = 77
+    img = load_image(input_path)
+    encrypted_img = encrypt_image(img, key)
+    save_image(encrypted_img, enc_path)
+    decrypted_img = decrypt_image(encrypted_img, key)
+    save_image(decrypted_img, dec_path)
+    print("Encryption and decryption complete.")
